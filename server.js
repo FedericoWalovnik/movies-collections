@@ -1,9 +1,21 @@
-const express = require('express')
+const express = require('express');
+const connectDB = require('./config/db');
 
 const app = express();
 
-app.get('/', (req,res) => res.send('API running'))
+//Connect Database
+connectDB();
 
-const PORT = process.env.PORT || 5000 
+// Init Middleware
+app.use(express.json({ extended: false }));
+
+app.get('/', (req, res) => res.send('API running'));
+
+//Define Routes
+app.use('/api/users', require('./routes/api/users'));
+app.use('/api/auth', require('./routes/api/auth'));
+app.use('/api/collections', require('./routes/api/collections'));
+
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server app and running on port ${PORT}`));
