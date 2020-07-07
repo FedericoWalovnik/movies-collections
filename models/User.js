@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
     trim: true
   },
   avatar: {
-    type: String
+    type: Buffer
   },
   tokens: [
     {

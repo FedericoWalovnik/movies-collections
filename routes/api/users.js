@@ -56,6 +56,36 @@ router.post('/login', async (req, res) => {
   }
 });
 
+//@route    POST api/users/logout
+//@desc     Logout from current account
+//@acces    Private
+router.post('/logout', auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter((token) => {
+      return token.token !== req.token;
+    });
+    await req.user.save();
+
+    res.send();
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
+//@route    POST api/users/logoutAll
+//@desc     Logout from all the sessions
+//@acces    Private
+router.post('/logoutAll', auth, async(req,res) =>{
+  try {
+      req.user.tokens = []
+      await req.user.save()
+
+      res.send()
+  } catch (err) {
+      res.status(500).send()
+  }
+})
+
 //@route    DELETE api/users
 //@desc     Delete user logged
 //@acces    Private
@@ -69,12 +99,34 @@ router.delete('/', auth, async (req, res) => {
   }
 });
 
-//@route    DELETE api/users/me
+//@route    GET api/users/me
 //@desc     Get user logged
 //@acces    Private
 router.get('/me', auth, async (req, res) => {
   const { id, name, email, tokens, date } = req.user;
   res.send({ id, name, email, tokens, date });
 });
+
+//@route    PATCH api/users/me
+//@desc     Update user info
+//@acces    Private
+router.patch('/me', auth, async(req,res)=>{
+  const updates = Object.keys(req.body)
+  const allowedUpdates = ['name', 'email', 'password','avatar']
+  const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+
+  if(!isValidOperation){
+      return res.status(400).json({ errors: 'Invalid update!' })
+  }
+
+  try {
+      updates.forEach((update) => req.user[update] = req.body[update])
+      await req.user.save()
+
+      res.send(req.user)
+  } catch (err) {
+      res.status(400).json({ errors: 'Invalid update!' })
+  }
+})
 
 module.exports = router;
